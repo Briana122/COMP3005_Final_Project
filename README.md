@@ -1,4 +1,4 @@
-# COMP3005_Final_Project
+# Health and Fitness Club (Project 2) - COMP 3005 Final Project
 
 ## How it works
 The Health and Fitness Club was created using Java. This program can be run using the command-line interface. There are 3 main classes that contain the majority of the functions. The Main class contains functions for logging in and authentication, the Admin class contains functions used by an admin user, the Trainer class contains functions used by a trainer user, and the Member class contains functions used by a member user. All member variables and class functions were made private so that outside classes cannot change other user’s data.
