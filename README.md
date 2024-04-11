@@ -6,7 +6,7 @@ The Health and Fitness Club was created using Java. This program can be run usin
 ## How to run it
 1. Clone the repository
 2. Ensure you have IntelliJ, PostgreSQL, and pgAdmin installed on your machine
-3. Open the _Health and Fitness Club_ project in IntelliJ
+3. Open the `healthAndFitnessClub` project in IntelliJ
 4. Create a new database called `FinalProject` in pgAdmin. Change lines 12 and 13 of the Main class with the username and password to your database.
 5. Open the Main class and click the run button at the top right corner of the screen
 6. Observe that the program runs in the command line interface
