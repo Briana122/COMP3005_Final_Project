@@ -24,10 +24,7 @@ public class HealthAchievement {
 
     public void delete(){
         try{
-            // create query to delete student entry with student id = student_id
             PreparedStatement pstmt = connection.prepareStatement("DELETE FROM health_achievements WHERE achievement_id = ?");
-
-            // populate query with the given student_id
             pstmt.setInt(1, achievement_id);
 
             // execute the query to delete entry and print success message

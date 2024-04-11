@@ -23,7 +23,6 @@ public class FitnessRoutine {
 
     public void delete(){
         try{
-            // create query to delete student entry with student id = student_id
             PreparedStatement pstmt = connection.prepareStatement("DELETE FROM fitness_routines WHERE routine_id = ?");
 
             // populate query with the given student_id

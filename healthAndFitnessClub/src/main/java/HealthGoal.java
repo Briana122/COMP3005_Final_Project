@@ -24,10 +24,7 @@ public class HealthGoal {
 
     public void delete(){
         try{
-            // create query to delete student entry with student id = student_id
             PreparedStatement pstmt = connection.prepareStatement("DELETE FROM health_goals WHERE goal_id = ?");
-
-            // populate query with the given student_id
             pstmt.setInt(1, goal_id);
 
             // execute the query to delete entry and print success message
@@ -54,10 +51,8 @@ public class HealthGoal {
         System.out.print("New Title: ");
         newTitle = sc.nextLine();
         try{
-            // create query to update the entry who has member id = member_id with first_name = newFName
             PreparedStatement pstmt = connection.prepareStatement("UPDATE health_goals SET title = ? WHERE goal_id = ?");
 
-            // populate query with the provided member_id and newFName
             pstmt.setString(1, newTitle);
             pstmt.setInt(2, goal_id);
 

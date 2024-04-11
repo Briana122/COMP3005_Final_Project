@@ -70,12 +70,13 @@ public class Member {
         }
     }
 
+    // book private session
     private void bookPrivateSession(){
         int trainerChosen = 0, roomChosen = 0;
         LocalDate newDate;
         LocalTime newStartTime, newEndTime;
         double cost;
-        String type, title, description;
+        String title, description;
         Time duration;
 
         System.out.println("--- NEW SESSION ---");
@@ -107,8 +108,8 @@ public class Member {
             return;
         }
 
+        // get available trainer
         Set<Integer> trainerID = getAvailableTrainers(newDate, newStartTime, newEndTime);
-
         if(trainerID.size() != 0){
             while(true) {
                 System.out.print("\nPlease select trainer ID: ");
@@ -122,8 +123,8 @@ public class Member {
             return;
         }
 
+        // get available rooms
         Set<Integer> roomID = getAvailableRooms(Date.valueOf(newDate), Time.valueOf(newStartTime), Time.valueOf(newEndTime));
-
         if (roomID.size() != 0){
             while(true) {
                 System.out.print("\nPlease select room ID: ");
@@ -137,6 +138,7 @@ public class Member {
             return;
         }
 
+        // add session
         try{
             PreparedStatement pstmt = connection.prepareStatement("INSERT INTO session (date, cost, start_time, " +
                     "end_time, duration, type, title, description, trainer_id, room_id) VALUES(?, ?, ?, ?, " +
@@ -156,7 +158,7 @@ public class Member {
             // execute the query to update entry and print success message
             if(pstmt.executeUpdate() > 0){
                 System.out.println("Added session successfully.");
-                createBill("PRIVATE", cost, Date.valueOf(newDate));
+                createBill("PRIVATE", cost);
                 menu();
                 return;
             }
@@ -173,17 +175,15 @@ public class Member {
         }
     }
 
-    private void createBill(String type, double cost, Date date){
+    // create bill if it is not existing already
+    private void createBill(String type, double cost){
         try{
             String query = "INSERT INTO Bills (member_id, amount, date, session_type) " +
                     "SELECT * FROM (SELECT ?, ?, CURRENT_DATE, ?) AS new_bill " +
                     "WHERE NOT EXISTS ( SELECT 1 FROM Bills " +
                     "WHERE member_id = ? AND amount = ? AND date = CURRENT_DATE AND session_type = ?)";
-            // create query to insert a new row to the table
             PreparedStatement pstmt = connection.prepareStatement(query);
 
-
-            // populate query with the provided student information
             pstmt.setInt(1, member_id);
             pstmt.setDouble(2, cost);
             pstmt.setString(3, type);
@@ -191,7 +191,6 @@ public class Member {
             pstmt.setDouble(5, cost);
             pstmt.setString(6, type);
 
-            // execute the query to add new student and print success message
             if(pstmt.executeUpdate() > 0){
                 System.out.println("Bill Added");
             }
@@ -205,6 +204,7 @@ public class Member {
         }
     }
 
+    // explore all group sessions
     private void exploreSession(){
         Set<Integer> groupID = new HashSet<Integer>();
         int sessionID;
@@ -225,7 +225,8 @@ public class Member {
                         resultSet.getString("title") + "\t" +
                         resultSet.getDate("date") + "\t" +
                         resultSet.getString("start_time") + "-" +
-                        resultSet.getString("end_time"));
+                        resultSet.getString("end_time") + "\t" +
+                        resultSet.getDouble("cost"));
             }
             while(true) {
                 System.out.print("Which session ID would you like to view? (-1 to go back) ");
@@ -243,6 +244,7 @@ public class Member {
         }
     }
 
+    // display sessions with specified sessionID
     private void displaySession(int sessionID){
         String query = "SELECT * FROM session WHERE session_id = " + sessionID;
         int choice = -1;
@@ -281,6 +283,7 @@ public class Member {
         }
     }
 
+    // register member into group session
     private void registerSession(int sessionID, int roomID, double cost, Date date, String type){
         // check if class is full
         if(isSessionFull(sessionID, getRoomCapcity(roomID))){
@@ -296,13 +299,12 @@ public class Member {
             pstmt.setInt(2, member_id);
 
             if(pstmt.executeUpdate() > 0){
-                createBill(type, cost, date);
+                createBill(type, cost);
                 System.out.println("Registered for session success.");
             }
             else{
                 System.out.println("Unable to register for session. Please try again");
                 exploreSession();
-                return;
             }
         }
         catch(Exception e){
@@ -310,6 +312,7 @@ public class Member {
         }
     }
 
+    // check if session is full
     private boolean isSessionFull(int sessionID, int maxCap){
         try{
             PreparedStatement pstmt = connection.prepareStatement("SELECT COUNT(DISTINCT member_id) AS total_entries " +
@@ -325,6 +328,7 @@ public class Member {
         return false;
     }
 
+    // check for room capacity
     private int getRoomCapcity(int roomID){
         try{
             PreparedStatement pstmt = connection.prepareStatement("SELECT max_capacity FROM room WHERE room_id = " + roomID);
@@ -338,6 +342,7 @@ public class Member {
         return -1;
     }
 
+    // manage profile
     private void manageProfile(){
         int choice = -1;
 
@@ -371,6 +376,7 @@ public class Member {
         }
     }
 
+    // view dashboard
     private void dashboard(){
         // view height, weight
         // modify fitness achievements, and fitness goals
@@ -408,6 +414,7 @@ public class Member {
         menu();
     }
 
+    // view health goals
     private void healthGoals(){
         int choice = -1;
         System.out.println("--- HEALTH GOALS ---");
@@ -432,6 +439,8 @@ public class Member {
         }
         dashboard();
     }
+
+    // view health achievements
     private void healthAchievements(){
         int choice = -1;
         System.out.println("--- HEALTH ACHIEVEMENTS ---");
@@ -457,6 +466,7 @@ public class Member {
         dashboard();
     }
 
+    // edit goals
     private void editGoal(){
         int choice = -1;
         while(choice == -1){
@@ -471,6 +481,8 @@ public class Member {
             else choice = -1;
         }
     }
+
+    // edit achievements
     private void editAchievement(){
         int choice = -1;
         while(choice == -1){
@@ -486,6 +498,7 @@ public class Member {
         }
     }
 
+    // add goal
     private void addGoal(){
         String title;
         System.out.println("ADD GOAL");
@@ -494,15 +507,12 @@ public class Member {
         System.out.println();
 
         try{
-            // create query to insert a new row to the table
             PreparedStatement pstmt = connection.prepareStatement("INSERT INTO health_goals " +
                     "(member_id, title, creation_date) VALUES(?, ?, CURRENT_DATE)");
 
-            // populate query with the provided student information
             pstmt.setInt(1, member_id);
             pstmt.setString(2, title);
 
-            // execute the query to add new student and print success message
             if(pstmt.executeUpdate() > 0){
                 System.out.println("Added Health Goal " + title);
                 viewHealthGoals();
@@ -519,6 +529,7 @@ public class Member {
         }
     }
 
+    // add achievement
     private void addAchievement(){
         String title, description, date;
         System.out.println("ADD ACHIEVEMENT");
@@ -531,19 +542,15 @@ public class Member {
         System.out.println();
 
         try{
-            // create query to insert a new row to the table
             PreparedStatement pstmt = connection.prepareStatement("INSERT INTO health_achievements " +
                     "(member_id, title, date, description) VALUES(?, ?, ?, ?)");
 
-            // populate query with the provided student information
             pstmt.setInt(1, member_id);
             pstmt.setString(2, title);
-            // parsing enrollment_date to be of the correct Date type before sending the query
             Date d = Date.valueOf(date);
             pstmt.setDate(3, d);
             pstmt.setString(4, description);
 
-            // execute the query to add new student and print success message
             if(pstmt.executeUpdate() > 0){
                 System.out.println("Added Health Achievement " + title);
                 viewHealthAchievements();
@@ -561,6 +568,7 @@ public class Member {
         }
     }
 
+    // delete goal
     private void deleteGoal(){
         int choice = -1;
         if(health_goals.size() > 0){
@@ -581,6 +589,7 @@ public class Member {
         }
     }
 
+    // delete achievement
     private void deleteAchievement(){
         int choice = -1;
         if(health_achievements.size() > 0){
@@ -601,6 +610,7 @@ public class Member {
         }
     }
 
+    // view health achievements
     private void viewHealthAchievements(){
         int count = 1;
         getAllHealthAchievements();
@@ -610,6 +620,7 @@ public class Member {
         }
     }
 
+    // view health goals
     private void viewHealthGoals(){
         int count = 1;
         getAllHealthGoals();
@@ -619,6 +630,7 @@ public class Member {
         }
     }
 
+    // view fitness routines
     private void viewFitnessRoutines(){
         int count = 1;
         getAllFitnessRountines();
@@ -629,6 +641,7 @@ public class Member {
         }
     }
 
+    // get all health goals
     private void getAllHealthGoals(){
         String query = "SELECT * FROM Health_Goals WHERE member_id = ?";
         health_goals = new ArrayList<HealthGoal>();
@@ -652,6 +665,7 @@ public class Member {
         }
     }
 
+    // get all health achievements
     private void getAllHealthAchievements(){
         String query = "SELECT * FROM Health_Achievements WHERE member_id = ?";
         health_achievements = new ArrayList<HealthAchievement>();
@@ -676,6 +690,7 @@ public class Member {
         }
     }
 
+    // display all fitness routines
     private void getAllFitnessRountines(){
         String query = "SELECT * FROM Fitness_Routines WHERE member_id = ?";
         fitness_routines = new ArrayList<FitnessRoutine>();
@@ -700,6 +715,7 @@ public class Member {
         }
     }
 
+    // change name
     private void setFName(){
         String newFName;
         System.out.print("New First Name: ");
@@ -726,6 +742,7 @@ public class Member {
         }
     }
 
+    // change last name
     private void setLName(){
         String newLName;
         System.out.print("New Last Name: ");
@@ -752,6 +769,7 @@ public class Member {
         }
     }
 
+    // change password
     private void setPassword(){
         String pswd;
         System.out.print("New Password: ");
@@ -778,6 +796,7 @@ public class Member {
         }
     }
 
+    // change email
     private void setEmail(){
         String e;
         System.out.print("New Email: ");
@@ -804,6 +823,7 @@ public class Member {
         }
     }
 
+    // change heart rate
     private void setHeartRate(){
         String newHR;
         System.out.print("Updated Heart Rate (beats/min): ");
@@ -830,6 +850,7 @@ public class Member {
         }
     }
 
+    // change height
     private void setHeight(){
         String h;
         System.out.print("New Height: ");
@@ -856,6 +877,7 @@ public class Member {
         }
     }
 
+    // change weight
     private void setWeight(){
         String w;
         System.out.print("New Weight: ");
@@ -882,6 +904,7 @@ public class Member {
         }
     }
 
+    // update Member data structure info
     private void updateCurrInfo(){
         try{
             // create query get all the entries in the students table
@@ -904,6 +927,8 @@ public class Member {
             e.printStackTrace();
         }
     }
+
+    // edit fitness routine
     private void editFitnessRoutine(){
         int choice = -1;
         while(choice == -1){
@@ -919,6 +944,7 @@ public class Member {
         }
     }
 
+    // add fitness routine
     private void addFitnessRoutine(){
         String title, description, instructions;
         System.out.println("ADD FITNESS ROUTINE");
@@ -931,17 +957,14 @@ public class Member {
         System.out.println();
 
         try{
-            // create query to insert a new row to the table
             PreparedStatement pstmt = connection.prepareStatement("INSERT INTO fitness_routines " +
                     "(member_id, title, instructions, description) VALUES(?, ?, ?, ?)");
 
-            // populate query with the provided student information
             pstmt.setInt(1, member_id);
             pstmt.setString(2, title);
             pstmt.setString(3, instructions);
             pstmt.setString(4, description);
 
-            // execute the query to add new student and print success message
             if(pstmt.executeUpdate() > 0){
                 System.out.println("Added Fitness Routine " + title);
                 viewFitnessRoutines();
@@ -958,6 +981,7 @@ public class Member {
         }
     }
 
+    // delete fitness routine by trainer
     private void deleteFitnessRoutine(){
         int choice = -1;
         if(fitness_routines.size() > 0){
@@ -977,6 +1001,8 @@ public class Member {
             System.out.println("No fitness routines to delete");
         }
     }
+
+    // trainer can edit fitness routine for member
     private void trainerFitnessRoutines(){
         int choice = -1;
         viewFitnessRoutines();
@@ -999,6 +1025,7 @@ public class Member {
         }
     }
 
+    // trainer can modify certain information for user
     public void trainerManageProfile(){
         int choice = -1;
 
@@ -1033,6 +1060,7 @@ public class Member {
         }
     }
 
+    // trainer can change health goals for members
     private void trainerHealthGoals(){
         int choice = -1;
         System.out.println("--- HEALTH GOALS ---");
@@ -1056,6 +1084,8 @@ public class Member {
             else choice = -1;
         }
     }
+
+    // trainer can modify health achievements for members
     private void trainerHealthAchievements(){
         int choice = -1;
         System.out.println("--- HEALTH ACHIEVEMENTS ---");
@@ -1080,6 +1110,7 @@ public class Member {
         }
     }
 
+    // calculate duration for session
     private static Time calculateDuration(LocalTime newStartTime, LocalTime newEndTime) {
         // Calculate duration between start time and end time
         Duration duration = Duration.between(newStartTime, newEndTime);
@@ -1089,6 +1120,7 @@ public class Member {
         return durationTime;
     }
 
+    // get all available rooms
     private Set<Integer> getAvailableRooms(Date date, Time startTime, Time endTime){
         Set<Integer> roomID = new HashSet<Integer>();
 
@@ -1128,6 +1160,7 @@ public class Member {
         }
     }
 
+    // get all available trainers
     private Set<Integer> getAvailableTrainers(LocalDate date, LocalTime startTime, LocalTime endTime){
         Set<Integer> trainerID = new HashSet<Integer>();
         String query = "SELECT trainer.trainer_id, trainer_schedule.start_time, trainer_schedule.end_time, " +

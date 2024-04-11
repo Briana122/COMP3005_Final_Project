@@ -28,6 +28,7 @@ public class Trainer {
         sex = s;
     }
 
+    // menu
     public void menu(){
         int choice = -1;
         System.out.println("\n\n --- HEALTH AND FITNESS CLUB--- \nWELCOME TRAINER " + first_name.toUpperCase() +
@@ -48,6 +49,7 @@ public class Trainer {
         }
     }
 
+    // display all availability and give option to add new availability
     private void availability(){
         int choice = -1;
         while(choice == -1){
@@ -69,6 +71,7 @@ public class Trainer {
         menu();
     }
 
+    // add availability
     private void addAvailability(){
         System.out.println("--- ADD AVAILABILITY ---");
         System.out.print("\nEnter date (YYYY-MM-DD): ");
@@ -107,15 +110,12 @@ public class Trainer {
         }
     }
 
+    // view availability
     private void viewAvailability(){
-        int count = 0;
         try{
-            // create query get all the entries in the students table
             PreparedStatement pstmt = connection.prepareStatement("SELECT * FROM trainer_schedule WHERE trainer_id =" + trainer_id);
-            // execute the query
             ResultSet resultSet = pstmt.executeQuery();
 
-            // print out the data returned by the query
             System.out.println("Schedule ID \t Date \t\t\t Start Time \t\t End Time \t\t Duration");
             while(resultSet.next()){
                 System.out.println(resultSet.getInt("schedule_id") + "\t\t\t\t " +
@@ -123,7 +123,6 @@ public class Trainer {
                         resultSet.getString("start_time") + "\t\t\t " +
                         resultSet.getString("end_time") + "\t\t " +
                         resultSet.getString("duration"));
-                count++;
             }
         }
         // catch any exceptions
@@ -132,6 +131,7 @@ public class Trainer {
         }
     }
 
+    // calculate duration
     private static Time calculateDuration(LocalTime newStartTime, LocalTime newEndTime) {
         // Calculate duration between start time and end time
         Duration duration = Duration.between(newStartTime, newEndTime);
@@ -141,6 +141,7 @@ public class Trainer {
         return durationTime;
     }
 
+    // check if there is conflict with existing availability
     public boolean hasConflict(LocalDate date, LocalTime startTime, LocalTime endTime, int s_id) {
         String query = "SELECT COUNT(*) FROM trainer_schedule " +
                 "WHERE trainer_id = ? AND date = ? " +
@@ -172,7 +173,7 @@ public class Trainer {
         }
     }
 
-
+    // search member by first/last name
     private void searchMember(){
         String name, query;
         ArrayList<Member> memberSearch = new ArrayList<Member>();
@@ -217,7 +218,7 @@ public class Trainer {
                         resultSet.getDouble("weight"),
                         resultSet.getInt("heart_rate")));
             }
-            if(memberSearch.size() > 0) editMember(memberSearch);
+            if(memberSearch.size() > 0) editMember();
         }
         // catch any exceptions
         catch(Exception e){
@@ -227,7 +228,8 @@ public class Trainer {
         menu();
     }
 
-    private void editMember(ArrayList<Member> memberList){
+    // edit member information
+    private void editMember(){
         int choice = -1;
 
         while(choice == -1){
@@ -259,6 +261,7 @@ public class Trainer {
         }
     }
 
+    // manage trainer profile
     private void manageProfile(){
         int choice = -1;
 
@@ -282,19 +285,17 @@ public class Trainer {
         }
     }
 
+    // set first name
     private void setFName(){
         String newFName;
         System.out.print("New First Name: ");
         newFName = sc.nextLine();
         try{
-            // create query to update the entry who has member id = member_id with first_name = newFName
             PreparedStatement pstmt = connection.prepareStatement("UPDATE trainer SET first_name = ? WHERE trainer_id = ?");
 
-            // populate query with the provided member_id and newFName
             pstmt.setString(1, newFName);
             pstmt.setInt(2, trainer_id);
 
-            // execute the query to update entry and print success message
             if(pstmt.executeUpdate() > 0){
                 System.out.println("Update first name: " + newFName);
             }
@@ -311,19 +312,17 @@ public class Trainer {
         }
     }
 
+    // set last name
     private void setLName(){
         String newLName;
         System.out.print("New Last Name: ");
         newLName = sc.nextLine();
         try{
-            // create query to update the entry who has member id = member_id with last_name = newLName
             PreparedStatement pstmt = connection.prepareStatement("UPDATE trainer SET last_name = ? WHERE trainer_id = ?");
 
-            // populate query with the provided member_id and newLName
             pstmt.setString(1, newLName);
             pstmt.setInt(2, trainer_id);
 
-            // execute the query to update entry and print success message
             if(pstmt.executeUpdate() > 0){
                 System.out.println("Update last name: " + newLName);
             }
@@ -340,19 +339,17 @@ public class Trainer {
         }
     }
 
+    // set password
     private void setPassword(){
         String pswd;
         System.out.print("New Password: ");
         pswd = sc.nextLine();
         try{
-            // create query to update the entry who has member id = member_id with password = pswd
             PreparedStatement pstmt = connection.prepareStatement("UPDATE trainer SET password = ? WHERE trainer_id = ?");
 
-            // populate query with the provided member_id and pswd
             pstmt.setString(1, pswd);
             pstmt.setInt(2, trainer_id);
 
-            // execute the query to update entry and print success message
             if(pstmt.executeUpdate() > 0){
                 System.out.println("Update password: " + pswd);
             }
@@ -369,19 +366,17 @@ public class Trainer {
         }
     }
 
+    // set email
     private void setEmail(){
         String e;
         System.out.print("New Email: ");
         e = sc.nextLine();
         try{
-            // create query to update the entry who has member id = member_id with email = e
             PreparedStatement pstmt = connection.prepareStatement("UPDATE trainer SET email = ? WHERE trainer_id = ?");
 
-            // populate query with the provided member_id and e
             pstmt.setString(1, e);
             pstmt.setInt(2, trainer_id);
 
-            // execute the query to update entry and print success message
             if(pstmt.executeUpdate() > 0){
                 System.out.println("Update email: " + e);
             }
@@ -398,11 +393,10 @@ public class Trainer {
         }
     }
 
+    // update current info in trainer data structure
     private void updateCurrInfo(){
         try{
-            // create query get all the entries in the students table
             PreparedStatement pstmt = connection.prepareStatement("SELECT * FROM trainer WHERE trainer_id = " + trainer_id);
-            // execute the query
             ResultSet resultSet = pstmt.executeQuery();
 
             if(resultSet.next()){

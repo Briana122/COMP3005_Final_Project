@@ -35,11 +35,10 @@ public class Main {
 
     public static void startClub(Connection connection){
         System.out.println("--- HEALTH AND FITNESS CLUB ---");
-
         start(connection);
-
     }
 
+    // function to start program
     public static void start(Connection connection){
         int loginSuccess = -1;
         Scanner sc = new Scanner(System.in);
@@ -74,12 +73,12 @@ public class Main {
         }
     }
 
+    // function to sign up new memebr
     public static void signUp(Connection connection){
         String fname, lname, password, email, sex, DoB = "00-00-0000";
         double height, weight;
         int heart_rate;
         Scanner sc = new Scanner(System.in);
-        clearScreen();
 
         System.out.println("\n\n--- SIGN UP ---");
         System.out.println("Please enter the following information\n");
@@ -88,6 +87,7 @@ public class Main {
         System.out.print("Last Name: ");
         lname = sc.nextLine();
 
+        // get user information
         while(true){
             System.out.print("Email: ");
             email = sc.nextLine();
@@ -120,6 +120,7 @@ public class Main {
         addMember(connection, fname, lname, email, password, sex, DoB, height, weight, heart_rate);
     }
 
+    // login function
     public static int logIn(Connection connection){
         String password, email;
         Scanner sc = new Scanner(System.in);
@@ -137,6 +138,7 @@ public class Main {
         return -1;
     }
 
+    // authenticate member
     public static boolean authMember(Connection connection, String email, String password){
         String memberQuery = "SELECT * FROM member WHERE email = ? AND password = ?";
 
@@ -144,7 +146,7 @@ public class Main {
             PreparedStatement stmt = connection.prepareStatement(memberQuery);
 
             stmt.setString(1, email);
-            stmt.setString(2, password); // In a real-world scenario, use a hashed password here
+            stmt.setString(2, password);
 
             ResultSet resultSet = stmt.executeQuery();
 
@@ -169,6 +171,7 @@ public class Main {
         return false;
     }
 
+    // authenticate trainer
     public static boolean authTrainer(Connection connection, String email, String password){
         String trainerQuery = "SELECT * FROM trainer WHERE email = ? AND password = ?";
 
@@ -176,7 +179,7 @@ public class Main {
             PreparedStatement stmt = connection.prepareStatement(trainerQuery);
 
             stmt.setString(1, email);
-            stmt.setString(2, password); // In a real-world scenario, use a hashed password here
+            stmt.setString(2, password);
 
             ResultSet resultSet = stmt.executeQuery();
 
@@ -197,6 +200,7 @@ public class Main {
         return false;
     }
 
+    // authenticate admin user
     public static boolean authAdmin(Connection connection, String email, String password){
         String adminQuery = "SELECT * FROM admin WHERE email = ? AND password = ?";
 
@@ -204,7 +208,7 @@ public class Main {
             PreparedStatement stmt = connection.prepareStatement(adminQuery);
 
             stmt.setString(1, email);
-            stmt.setString(2, password); // In a real-world scenario, use a hashed password here
+            stmt.setString(2, password);
 
             ResultSet resultSet = stmt.executeQuery();
 
@@ -224,18 +228,16 @@ public class Main {
         return false;
     }
 
+    // add new member
     public static void addMember(Connection connection, String first_name, String last_name, String email,
                                  String password, String sex, String DoB, double height, double weight, int heart_rate){
         try{
-            // create query to insert a new row to the table
             PreparedStatement pstmt = connection.prepareStatement("INSERT INTO Member (first_name, last_name, email," +
                     " date_of_birth, heart_rate, height, weight, password, sex) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)");
 
-            // populate query with the provided member information
             pstmt.setString(1, first_name);
             pstmt.setString(2, last_name);
             pstmt.setString(3, email);
-            // parsing date_of_birth to be of the correct Date type before sending the query
             Date date_of_birth = Date.valueOf(DoB);
             pstmt.setDate(4, date_of_birth);
             pstmt.setInt(5, heart_rate);
@@ -244,7 +246,6 @@ public class Main {
             pstmt.setString(8, password);
             pstmt.setString(9, sex);
 
-            // execute the query to add new member and print success message
             if(pstmt.executeUpdate() > 0){
                 System.out.println("Welcome on board " + first_name + " " + last_name);
                 authMember(connection, email, password);
@@ -260,6 +261,7 @@ public class Main {
         }
     }
 
+    // check if email exists since they all must be unique
     public static boolean emailExists(Connection connection, String email) {
         String query = "SELECT COUNT(*) FROM Member WHERE email = ?";
         int count = 0;
@@ -278,6 +280,7 @@ public class Main {
         return count > 0;
     }
 
+    // check for valid date of birth
     private static boolean isValidDate(String date) {
         String[] parts = date.split("-");
 
@@ -312,10 +315,5 @@ public class Main {
 
     private static boolean isLeapYear(int year) {
         return ((year % 4 == 0) && (year % 100 != 0)) || (year % 400 == 0);
-    }
-
-    public static void clearScreen() {
-        System.out.print("\033[H\033[2J");
-        System.out.flush();
     }
 }

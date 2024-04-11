@@ -63,6 +63,7 @@ public class Admin {
         }
     }
 
+    // manage bills
     private void manageBills(){
         Set<Integer> billID;
         int choice;
@@ -82,6 +83,7 @@ public class Admin {
         }
     }
 
+    // function to pay bill
     private void payBill(int billID){
         int choice;
         while(true) {
@@ -94,14 +96,11 @@ public class Admin {
             }
             else if (choice == 1){
                 try{
-                    // create query to update the entry who has student id = student_id with email = new_email
                     PreparedStatement pstmt = connection.prepareStatement("UPDATE bills SET admin_id = ? WHERE bill_id = ?");
 
-                    // populate query with the provided student_id and new_email
                     pstmt.setInt(1, admin_id);
                     pstmt.setInt(2, billID);
 
-                    // execute the query to update entry and print success message
                     if(pstmt.executeUpdate() > 0){
                         System.out.println("Bill Paid");
                     }
@@ -121,13 +120,13 @@ public class Admin {
         }
     }
 
+    // display all bills that need to be paid
     private Set<Integer> displayBills(){
         Set<Integer> billID = new HashSet<Integer>();
         try{
             PreparedStatement pstmt = connection.prepareStatement("SELECT * FROM bills WHERE admin_id IS NULL");
             ResultSet resultSet = pstmt.executeQuery();
 
-            // print out the data returned by the query
             System.out.println("Bill ID \t\t Amount \t\t Date");
             while(resultSet.next()){
                 billID.add(resultSet.getInt("bill_id"));
@@ -143,39 +142,7 @@ public class Admin {
         return billID;
     }
 
-    private Set<Integer> searchMember(){
-        String name, query;
-        Set<Integer> memberSearch = new HashSet<Integer>();
-
-        System.out.print("First OR Last Name: ");
-        name = sc.nextLine();
-        query = "SELECT * FROM Member WHERE first_name = ? OR last_name = ?";
-
-        try{
-            PreparedStatement pstmt = connection.prepareStatement(query);
-            pstmt.setString(1, name);
-            pstmt.setString(2, name);
-            ResultSet resultSet = pstmt.executeQuery();
-
-            System.out.println("\n\nMember ID \t\t First Name \t\t Last Name \t\t Email");
-            while(resultSet.next()){
-                System.out.println(resultSet.getInt("member_id") + "\t\t\t\t " +
-                        resultSet.getString("first_name") + "\t\t\t\t " +
-                        resultSet.getString("last_name") + "\t\t\t " +
-                        resultSet.getString("email") + "\t\t ");
-
-                memberSearch.add(resultSet.getInt("member_id"));
-            }
-            return(memberSearch);
-        }
-        // catch any exceptions
-        catch(Exception e){
-            e.printStackTrace();
-            System.out.println("Error getting members... Please try again");
-        }
-        return(memberSearch);
-    }
-
+    // function to manage equipment
     private void manageEquipment(){
         int choice = -1;
         Set<Integer> equipID = new HashSet<Integer>();
@@ -201,6 +168,7 @@ public class Admin {
             e.printStackTrace();
         }
 
+        // what to do with the equipment
         while(choice == -1){
             System.out.println("\n0. Go back");
             System.out.println("1. Do maintence on equipment");
@@ -220,6 +188,7 @@ public class Admin {
         }
     }
 
+    // carry maintenance on equipment
     private void maintenanceOnEquip(Set<Integer> equipID){
         int choice = -1, id;
         String nextDate;
@@ -253,6 +222,7 @@ public class Admin {
         menu();
     }
 
+    // edit info for existing session
     private void editSession(){
 
         int sessionChosen, choice = -1;
@@ -295,12 +265,11 @@ public class Admin {
         menu();
     }
 
+    // delete existing session
     private void deleteSession(int sessionID){
         try{
             // create query to delete session entry
             PreparedStatement pstmt = connection.prepareStatement("DELETE FROM session WHERE session_id = ?");
-
-            // populate query with the given student_id
             pstmt.setInt(1, sessionID);
 
             // execute the query to delete entry and print success message
@@ -316,6 +285,8 @@ public class Admin {
             e.printStackTrace();
         }
     }
+
+    // change room for existing session
     private void changeRoom(int sessionID){
         int roomChosen;
         Date date;
@@ -369,6 +340,7 @@ public class Admin {
         }
     }
 
+    // change time/trainer for existing session
     private void changeTimeOrTrainer(int sessionID){
         LocalDate newDate;
         LocalTime newStartTime, newEndTime;
@@ -377,7 +349,7 @@ public class Admin {
         int trainerChosen;
 
         try {
-
+            // new date/time
             System.out.print("Date (YYYY-MM-DD): ");
             newDate = LocalDate.parse(sc.nextLine());
 
@@ -389,8 +361,8 @@ public class Admin {
 
             duration = calculateDuration(newStartTime, newEndTime);
 
+            // find available trainers
             Set<Integer> trainerID = getAvailableTrainers(newDate, newStartTime, newEndTime);
-
             if(trainerID.size() != 0){
                 while(true) {
                     System.out.print("\nPlease select trainer ID: ");
@@ -429,6 +401,7 @@ public class Admin {
         }
     }
 
+    // get all existing sessions
     private Set<Integer> getAllSessions(){
         Set<Integer> sessionID = new HashSet<Integer>();
         try{
@@ -455,6 +428,7 @@ public class Admin {
         return sessionID;
     }
 
+    // create new session
     private void createNewSession(){
         int trainerChosen = 0, roomChosen = 0;
         LocalDate newDate;
@@ -504,8 +478,8 @@ public class Admin {
             return;
         }
 
+        // get available trainers
         Set<Integer> trainerID = getAvailableTrainers(newDate, newStartTime, newEndTime);
-
         if(trainerID.size() != 0){
             while(true) {
                 System.out.print("\nPlease select trainer ID: ");
@@ -518,9 +492,8 @@ public class Admin {
             menu();
             return;
         }
-
+        // get available rooms
         Set<Integer> roomID = getAvailableRooms(Date.valueOf(newDate), Time.valueOf(newStartTime), Time.valueOf(newEndTime));
-
         if (roomID.size() != 0){
             while(true) {
                 System.out.print("\nPlease select room ID: ");
@@ -533,7 +506,7 @@ public class Admin {
             menu();
             return;
         }
-
+        // create the new session (insert into db)
         try{
             PreparedStatement pstmt = connection.prepareStatement("INSERT INTO session (date, cost, start_time, " +
                     "end_time, duration, type, title, description, trainer_id, room_id) VALUES(?, ?, ?, ?, " +
@@ -569,6 +542,7 @@ public class Admin {
         }
     }
 
+    // get available rooms during specified time
     private Set<Integer> getAvailableRooms(Date date, Time startTime, Time endTime){
         Set<Integer> roomID = new HashSet<Integer>();
 
@@ -608,6 +582,7 @@ public class Admin {
         }
     }
 
+    // get available trainers during specified time
     private Set<Integer> getAvailableTrainers(LocalDate date, LocalTime startTime, LocalTime endTime){
         Set<Integer> trainerID = new HashSet<Integer>();
         String query = "SELECT trainer.trainer_id, trainer_schedule.start_time, trainer_schedule.end_time, " +
@@ -651,6 +626,7 @@ public class Admin {
         }
     }
 
+    // calculate duration between start and end times
     private static Time calculateDuration(LocalTime newStartTime, LocalTime newEndTime) {
         // Calculate duration between start time and end time
         Duration duration = Duration.between(newStartTime, newEndTime);
