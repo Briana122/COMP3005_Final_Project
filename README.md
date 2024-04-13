@@ -17,6 +17,11 @@ Please see `DDL.sql` and `DML.sql` for the DDL and DML files.
 ## Project Report
 Please see file `Project Report.pdf` for more information on the project
 
+## Considerations for Bonus points:
+-	A member can change their fitness achievements and health metrics
+-	Trainers can search for a member by name and change their statistics (limited to their health metrics)
+-	Sign in with authentication (passwords)
+
 ## YouTube Video
 
 **Please note that since YouTube only allows videos under 15 minutes to be posted, I have sped up the original video. Please feel free to slow it down by changing the playback speed to 0.5 or 0.75. Thank you for your understanding :)**
